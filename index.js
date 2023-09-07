@@ -1,16 +1,11 @@
-const createGameBoard = () => {
-  let gameboard = {};
-  for (let i = 0; i < 8; i++) {
-    gameboard[i] = [0, 1, 2, 3, 4, 5, 6, 7];
-  }
-  return gameboard;
-};
-
 const createKnight = () => {
   return {
-    move(startingCoordinates) {
-      let [x, y] = startingCoordinates;
-      let potentialCoordinates = [
+    move(startingCoordinatesStr) {
+      let startingCoordinatesArr = startingCoordinatesStr
+        .split(',')
+        .map((string) => Number(string));
+      let [x, y] = startingCoordinatesArr;
+      let potentialCoordinatesArr = [
         [x + 2, y + 1],
         [x + 2, y - 1],
         [x - 2, y + 1],
@@ -20,10 +15,10 @@ const createKnight = () => {
         [x + 1, y - 2],
         [x - 1, y - 2],
       ];
-      potentialCoordinates = potentialCoordinates.filter(
-        ([x, y]) => x >= 0 && x < 8 && y >= 0 && y < 8
-      );
-      return potentialCoordinates;
+      potentialCoordinatesStr = potentialCoordinatesArr
+        .filter(([x, y]) => x >= 0 && x < 8 && y >= 0 && y < 8)
+        .map((arr) => arr.toString());
+      return potentialCoordinatesStr;
     },
   };
 };
@@ -63,19 +58,20 @@ const knightTravails = (knight, start, end) => {
   const addMoves = (knight, start) => {
     let canMoveTo = knight.move(start);
     canMoveTo.forEach((coordinate) => {
-      knightGraph.addVertex(coordinate);
-      knightGraph.addEdge(start, coordinate);
-      queue.push(coordinate);
+      let keys = [...knightGraph.adjList.keys()];
+      if (!keys.includes(coordinate)) {
+        knightGraph.addVertex(coordinate);
+        knightGraph.addEdge(start, coordinate);
+        queue.push(coordinate);
+      };
     });
   };
+
   addMoves(knight, start);
-  console.log(queue);
   let match = false;
   while (!match) {
     for (const key of knightGraph.adjList.keys()) {
-      let [x, y] = key;
-      let [a, b] = end;
-      if (x === a && y === b) {
+      if (key === end) {
         match = true;
       }
     }
@@ -84,34 +80,11 @@ const knightTravails = (knight, start, end) => {
   }
   console.log(knightGraph);
   knightGraph.printGraph();
-  let output = [];
-  const findPath = (end) => {
-    for (const key of knightGraph.adjList.keys()) {
-      let [x, y] = key;
-      let [a, b] = end;
-      if (x === a && y === b) {
-        output.push(key);
-      }
-    };
-  }
-  console.log(queue);
-  // while (end !== start) {
-  //   findPath(end);
-  // }
-  console.log(output);
+  console.log([...knightGraph.adjList.keys()]);
+  console.log(knightGraph.adjList.get('4,2'))
 };
 
-const testGameBoard = createGameBoard();
-console.log(
-  testGameBoard[7],
-  testGameBoard[6],
-  testGameBoard[5],
-  testGameBoard[4],
-  testGameBoard[3],
-  testGameBoard[2],
-  testGameBoard[1],
-  testGameBoard[0]
-);
 const testKnight = createKnight();
-console.log(testKnight.move([0, 0]));
-knightTravails(testKnight, [0, 0], [0, 4]);
+console.log(testKnight.move('0,0'));
+knightTravails(testKnight, '0,0', '0,4');
+// knightTravails(testKnight, '0,0', '1,6');

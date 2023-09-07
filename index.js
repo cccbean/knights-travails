@@ -82,9 +82,73 @@ const knightTravails = (knight, start, end) => {
   knightGraph.printGraph();
   console.log([...knightGraph.adjList.keys()]);
   console.log(knightGraph.adjList.get('4,2'))
+
+  const tree = (graph, start) => {
+    const node = (coord) => {
+      return {
+        coord,
+        parent: null,
+        adjList: [],
+      }
+    }
+
+    const graphToTree = (graph, start, parent = null) => {
+      let newNode = node(start);
+      if (parent === null) {
+        newNode.parent = parent;
+      } else {
+        newNode.parent = parent.coord;
+      }
+
+      let adjArr = graph.adjList.get(start);
+      if (newNode.parent !== null) {
+        adjArr = adjArr.filter((element) => element !== newNode.parent);
+      }
+      if (adjArr.length !== 0) {
+        for (const value of adjArr) {
+          newNode.adjList.push(graphToTree(graph, value, newNode));
+        }
+      }
+  
+      return newNode;
+    }
+
+    return {
+      root: graphToTree(graph, start),
+      search(target) {
+        let currentNode = this.root;
+        let queue = [];
+        let list = currentNode.adjList;
+        list.forEach((node) => queue.push(node));
+        while (currentNode.coord !== target) {
+          currentNode = queue.shift();
+          list = currentNode.adjList;
+          if (list.length !== 0) {
+            list.forEach((node) => queue.push(node));
+          }
+        }
+        return currentNode;
+      },
+    }
+  }
+  const newTree = tree(knightGraph, start);
+  console.log(newTree);
+  console.log(newTree.search(end));
+  let output = [];
+  output.push(newTree.search(end));
+  // return
+  while (output[output.length - 1].coord !== start) {
+    end = output[output.length - 1].parent;
+    output.push(newTree.search(end));
+  }
+  console.log(output);
+  let path = output.map((node) => node.coord).reverse();
+  console.log(path);
+  return path;
 };
 
 const testKnight = createKnight();
 console.log(testKnight.move('0,0'));
 knightTravails(testKnight, '0,0', '0,4');
-// knightTravails(testKnight, '0,0', '1,6');
+knightTravails(testKnight, '0,0', '1,6');
+knightTravails(testKnight, '0,0', '0,1')
